@@ -38,7 +38,6 @@ public class Controller extends Application {
         stage.setTitle("TO DO LIST");
         stage.setWidth(500);
         stage.setHeight(550);
-        
 
         final Label label = new Label("TO DO LIST");
         label.setFont(new Font("Arial", 20));
