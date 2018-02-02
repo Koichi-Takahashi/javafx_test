@@ -38,6 +38,7 @@ public class Controller extends Application {
         stage.setTitle("TO DO LIST");
         stage.setWidth(500);
         stage.setHeight(550);
+        
 
         final Label label = new Label("TO DO LIST");
         label.setFont(new Font("Arial", 20));
@@ -70,7 +71,7 @@ public class Controller extends Application {
                     ).setDay(t.getNewValue());
                 });
 
-        TableColumn<Person, String> todoCol = new TableColumn("To Do");
+        TableColumn<Person, String> todoCol = new TableColumn("Todo");
         todoCol.setMinWidth(300);
         todoCol.setCellValueFactory(
                 new PropertyValueFactory<>("todo"));
@@ -87,14 +88,14 @@ public class Controller extends Application {
         table.getColumns().addAll(monthCol, dayCol, todoCol);
 
         final TextField addMonth = new TextField();
-        addMonth.setPromptText("month");
+        addMonth.setPromptText("Month");
         addMonth.setMaxWidth(monthCol.getPrefWidth());
         final TextField addDay = new TextField();
         addDay.setMaxWidth(dayCol.getPrefWidth());
         addDay.setPromptText("Day");
         final TextField addTodo = new TextField();
         addTodo.setMaxWidth(todoCol.getPrefWidth());
-        addTodo.setPromptText("To Do");
+        addTodo.setPromptText("Todo");
 
        final Button addButton = new Button("Add");
         addButton.setOnAction((ActionEvent e) -> {
@@ -163,3 +164,4 @@ public class Controller extends Application {
         }
     }
 }
+
