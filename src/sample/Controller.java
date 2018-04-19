@@ -1,10 +1,13 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -14,18 +17,20 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import java.lang.Object;
 
 public class Controller extends Application {
 
-    private final TableView<Person> table = new TableView<>();
-    private final ObservableList<Person> data = FXCollections.observableArrayList();
+    private final TableView<Item> table = new TableView<>();
+    private final ObservableList<Item> data = FXCollections.observableArrayList();
     final HBox hb = new HBox();
 
     public static void main(String[] args) {
@@ -36,55 +41,58 @@ public class Controller extends Application {
     public void start(Stage stage) {
         Scene scene = new Scene(new Group());
         stage.setTitle("TO DO LIST");
-        stage.setWidth(500);
+        stage.setWidth(580);
         stage.setHeight(550);
 
         final Label label = new Label("TO DO LIST");
         label.setFont(new Font("Arial", 20));
 
+        CheckBoxColumn checkBoxCol = new CheckBoxColumn();
+        checkBoxCol.setMinWidth(10);
+
         table.setEditable(true);
 
-        TableColumn<Person, String> monthCol = new TableColumn("Month");
+        TableColumn<Item, String> monthCol = new TableColumn("Month");
         monthCol.setMinWidth(25);
         monthCol.setCellValueFactory(
                 new PropertyValueFactory<>("month"));
 
-        monthCol.setCellFactory(TextFieldTableCell.<Person>forTableColumn());
+        monthCol.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
         monthCol.setOnEditCommit(
-                (CellEditEvent<Person, String> t) -> {
-                    ((Person) t.getTableView().getItems().get(
+                (CellEditEvent<Item, String> t) -> {
+                    ((Item) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setMonth(t.getNewValue());
                 });
 
-        TableColumn<Person, String> dayCol = new TableColumn("Day");
+        TableColumn<Item, String> dayCol = new TableColumn("Day");
         dayCol.setMinWidth(25);
         dayCol.setCellValueFactory(
                 new PropertyValueFactory<>("day"));
 
-        dayCol.setCellFactory(TextFieldTableCell.<Person>forTableColumn());
+        dayCol.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
         dayCol.setOnEditCommit(
-                (CellEditEvent<Person, String> t) -> {
-                    ((Person) t.getTableView().getItems().get(
+                (CellEditEvent<Item, String> t) -> {
+                    ((Item) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setDay(t.getNewValue());
                 });
 
-        TableColumn<Person, String> todoCol = new TableColumn("Todo");
+        TableColumn<Item, String> todoCol = new TableColumn("Contents");
         todoCol.setMinWidth(300);
         todoCol.setCellValueFactory(
                 new PropertyValueFactory<>("todo"));
 
-        todoCol.setCellFactory(TextFieldTableCell.<Person>forTableColumn());
+        todoCol.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
         todoCol.setOnEditCommit(
-                (CellEditEvent<Person, String> t) -> {
-                    ((Person) t.getTableView().getItems().get(
+                (CellEditEvent<Item, String> t) -> {
+                    ((Item) t.getTableView().getItems().get(
                             t.getTablePosition().getRow())
                     ).setTodo(t.getNewValue());
                 });
 
         table.setItems(data);
-        table.getColumns().addAll(monthCol, dayCol, todoCol);
+        table.getColumns().addAll(checkBoxCol, monthCol, dayCol, todoCol);
 
         final TextField addMonth = new TextField();
         addMonth.setPromptText("Month");
@@ -96,19 +104,34 @@ public class Controller extends Application {
         addTodo.setMaxWidth(todoCol.getPrefWidth());
         addTodo.setPromptText("Todo");
 
-       final Button addButton = new Button("Add");
+        final Button addButton = new Button("Add");
         addButton.setOnAction((ActionEvent e) -> {
-            data.add(new Person(
-                    addMonth.getText(),
-                    addDay.getText(),
-                    addTodo.getText()));
-            addMonth.clear();
-            addDay.clear();
-            addTodo.clear();
+
+            if((addMonth.getText() != null && !addMonth.getText().isEmpty()) && (addDay.getText() != null && !addDay.getText().isEmpty()) && (addTodo.getText() != null && !addTodo.getText().isEmpty())){
+
+                    data.add(new Item(
+                            addButton.isDefaultButton(),
+                            addMonth.getText(),
+                            addDay.getText(),
+                            addTodo.getText()));
+                    addMonth.clear();
+                    addDay.clear();
+                    addTodo.clear();
+
+                }
+
+                else{
+
+                    System.out.println("入力してください");
+
+            }
+
         });
 
         final Button deleteButton = new Button("Delete");
         deleteButton.setOnAction((ActionEvent e) -> {
+
+            data.remove(0);
 
         });
 
@@ -126,16 +149,61 @@ public class Controller extends Application {
         stage.show();
     }
 
-    public static class Person {
+    public static class CheckBoxColumn extends TableColumn<Item, Boolean>{
 
+        public CheckBoxColumn(){
+
+            this.setCellValueFactory(new PropertyValueFactory<>("checked"));
+            this.setCellFactory(column -> {
+
+                CheckBoxTableCell<Item, Boolean> cell = new CheckBoxTableCell<Item, Boolean>(index -> {
+
+                    BooleanProperty selected = new SimpleBooleanProperty(this.getTableView().getItems().get(index).isChecked());
+                    selected.addListener((ov, o, n) -> {
+
+                        this.getTableView().getItems().get(index).setChecked(n);
+                        this.getTableView().getSelectionModel().select(index);
+                        Event.fireEvent(column.getTableView(), new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0,
+                                MouseButton.PRIMARY, 1, true, true, true, true, true, true, true, true, true, true, null));
+
+                            });
+
+                    return selected;
+
+                });
+
+                return cell;
+
+            });
+
+        }
+
+    }
+
+    public static class Item {
+
+        private final SimpleBooleanProperty checked;
         private final SimpleStringProperty month;
         private final SimpleStringProperty day;
         private final SimpleStringProperty todo;
 
-        private Person(String fName, String lName, String todo) {
+        private Item(boolean checked, String fName, String lName, String todo) {
+            this.checked = new SimpleBooleanProperty(checked);
             this.month = new SimpleStringProperty(fName);
             this.day = new SimpleStringProperty(lName);
             this.todo = new SimpleStringProperty(todo);
+        }
+
+        public SimpleBooleanProperty checkedProperty() {
+            return checked;
+        }
+
+        public boolean isChecked() {
+            return checked.get();
+        }
+
+        public void setChecked(boolean checked) {
+            this.checked.set(checked);
         }
 
         public String getMonth() {
@@ -163,4 +231,3 @@ public class Controller extends Application {
         }
     }
 }
-
