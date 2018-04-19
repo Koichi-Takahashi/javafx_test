@@ -134,7 +134,7 @@ public class Controller extends Application {
         		Item item=table.getItems().get(i);
         		boolean ischecked=item.isChecked();
         		if(ischecked) {
-        			data.remove(i);
+        		
         		}
         	}
 
