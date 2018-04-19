@@ -130,8 +130,13 @@ public class Controller extends Application {
 
         final Button deleteButton = new Button("Delete");
         deleteButton.setOnAction((ActionEvent e) -> {
-
-            data.remove(0);
+        	for(int i=table.getItems().size()-1;i>=0;i--) {
+        		Item item=table.getItems().get(i);
+        		boolean ischecked=item.isChecked();
+        		if(ischecked) {
+        			data.remove(i);
+        		}
+        	}
 
         });
 
